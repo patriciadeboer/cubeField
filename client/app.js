@@ -1,3 +1,6 @@
+console.log('hi')
+import * as THREE from 'three';
+import Key from './keyboard'
 let renderer, scene, camera, pointLight, spotLight;
 
 let cubeSize, cubeWidth, cubeHeight, cubeDepth, cubeQuality;
@@ -213,3 +216,5 @@ function cameraPhysics() {
   camera.rotation.y = (-60 * Math.PI) / 180;
   camera.rotation.z = (-90 * Math.PI) / 180;
 }
+
+init();

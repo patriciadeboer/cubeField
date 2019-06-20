@@ -27,4 +27,5 @@ var Key = {
   }
 };
 
+export default Key;
 
