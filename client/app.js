@@ -77,7 +77,7 @@ function createCubes() {
     cube1Material
   );
 
-  console.log(cube1)
+  // console.log(cube1)
 
   scene.add(cube1);
   cube1.receiveShadow = true;
