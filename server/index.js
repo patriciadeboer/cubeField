@@ -5,7 +5,7 @@ const PORT = 8080
 
 
 app.use(express.static(path.join(__dirname, '../public')))
-
+app.use('*/imgs', express.static('public/imgs'));
 
 // any remaining requests with an extension send 404
 app.use((req, res, next) => {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Key from './keyboard'
+import Key from './keyboard';
 let renderer, scene, camera, pointLight, spotLight;
 
 let cubeSize, cubeWidth, cubeHeight, cubeDepth, cubeQuality;
@@ -27,6 +27,7 @@ function init() {
 
 function createScene() {
   scene = new THREE.Scene();
+  scene.background = new THREE.Color('skyblue');
 }
 
 function createCamera() {
@@ -43,8 +44,20 @@ function createCamera() {
 }
 
 function createCubes() {
-  let cube1Material = new THREE.MeshBasicMaterial({ color: 'coral' });
+  const loader = new THREE.TextureLoader();
+  // let cube1Material = new THREE.MeshBasicMaterial({ color: 'coral' });
+  let cube1Material = new THREE.MeshBasicMaterial({map: loader.load('../public/imgs/patricia.jpg')})
   let cube2Material = new THREE.MeshBasicMaterial({ color: 'teal' });
+
+
+  const materials = [
+    new THREE.MeshBasicMaterial({map: loader.load('../public/imgs/patricia.jpg')}),
+    new THREE.MeshBasicMaterial({map: loader.load('https://threejsfundamentals.org/threejs/resources/images/flower-2.jpg')}),
+    new THREE.MeshBasicMaterial({map: loader.load('https://threejsfundamentals.org/threejs/resources/images/flower-3.jpg')}),
+    new THREE.MeshBasicMaterial({map: loader.load('https://threejsfundamentals.org/threejs/resources/images/flower-4.jpg')}),
+    new THREE.MeshBasicMaterial({map: loader.load('https://threejsfundamentals.org/threejs/resources/images/flower-5.jpg')}),
+    new THREE.MeshBasicMaterial({map: loader.load('https://threejsfundamentals.org/threejs/resources/images/flower-6.jpg')}),
+  ];
 
   cubeSize = 30;
   cubeHeight = 30;
@@ -64,11 +77,13 @@ function createCubes() {
     cube1Material
   );
 
+  console.log(cube1)
+
   scene.add(cube1);
   cube1.receiveShadow = true;
   cube1.castShadow = true;
 
-  cube1.position.x = -170
+  cube1.position.x = -170;
 
   // lift cube1 up
   cube1.position.z = cubeDepth;
@@ -88,8 +103,50 @@ function createCubes() {
 
   // // add the sphere to the scene
   scene.add(cube2);
-  cube2.receiveShadow = true;
+  // cube2.receiveShadow = true;
   cube2.castShadow = true;
+  cube2.position.z = cubeDepth;
+
+  //cube 3
+  const cubeGeometry = new THREE.BoxBufferGeometry(30, 30, 30);
+
+  // const textureLoader = new THREE.TextureLoader();
+
+  // // Load a texture. See the note in chapter 4 on working locally, or the page
+  // // https://threejs.org/docs/#manual/introduction/How-to-run-things-locally
+  // // if you run into problems here
+  // const texture = textureLoader.load('../public/patricia.jpg');
+
+  // // set the "color space" of the texture
+  // texture.encoding = THREE.sRGBEncoding;
+
+  // // reduce blurring at glancing angles
+  // texture.anisotropy = 16;
+  // const material = new THREE.MeshStandardMaterial({
+  //   map: texture,
+  // });
+
+  // create a default (white) Basic material
+  //Allows to see things without light
+  const material = new THREE.MeshBasicMaterial({ color: 0x800080 });
+  // const material = new THREE.MeshStandardMaterial({ color: 'coral' });
+
+  // create a Mesh containing the geometry and material
+  mesh = new THREE.Mesh(cubeGeometry, material);
+  mesh.castShadow = true;
+  mesh.position.z = 50;
+
+  console.log(material)
+
+  // // add the mesh to the scene
+  scene.add(mesh);
+
+  const geo = new THREE.BoxBufferGeometry(30, 30, 30);
+
+  // const cubes = [];  // just an array we can use to rotate the cubes
+
+  const cube = new THREE.Mesh(geo, materials);
+  scene.add(cube);
 }
 
 function createGround() {
@@ -130,25 +187,59 @@ function createGround() {
 }
 
 function createLights() {
-  // create a point light
-  pointLight = new THREE.PointLight(0xf8d898);
+  // // create a point light
+  // // pointLight = new THREE.PointLight(0xf8d898);
 
-  // set its position
-  pointLight.position.x = -1000;
-  pointLight.position.y = 0;
-  pointLight.position.z = 1000;
-  pointLight.intensity = 2.9;
-  pointLight.distance = 10000;
-  // add to the scene
-  scene.add(pointLight);
+  // // // set its position
+  // // pointLight.position.x = -1000;
+  // // pointLight.position.y = 0;
+  // // pointLight.position.z = 1000;
+  // // pointLight.intensity = 2.9;
+  // // pointLight.distance = 10000;
+  // // // add to the scene
+  // // scene.add(pointLight);
 
-  // add a spot light
-  // this is important for casting shadows
-  spotLight = new THREE.SpotLight(0xf8d898);
-  spotLight.position.set(0, 0, 460);
-  spotLight.intensity = 1.5;
-  spotLight.castShadow = true;
-  scene.add(spotLight);
+  // // add a spot light
+  // // this is important for casting shadows
+  // spotLight = new THREE.SpotLight(0xf8d898);
+  // spotLight.position.set(0, 0, 460);
+  // spotLight.intensity = 10;
+  // spotLight.shadowDarkness = .5;
+  // spotLight.shadowCameraVisible=true
+  // spotLight.castShadow = true;
+  // scene.add(spotLight);
+
+  // // const light2 = new THREE.DirectionalLight(0xffffff, 5.0);
+
+  // // // move the light back and up a bit
+  // // light2.position.set(10, 10, 10);
+
+  // // // remember to add the light to the scene
+  // // scene.add(light);
+  // //Create a PointLight and turn on shadows for the light
+  // let light = new THREE.DirectionalLight(0xffffff, 1, 100);
+  // light.position.set(0, 1000, 1000);
+  // light.castShadow = true; // default false
+  // scene.add(light);
+
+  // //Set up shadow properties for the light
+  // light.shadow.mapSize.width = 512; // default
+  // light.shadow.mapSize.height = 512; // default
+  // light.shadow.camera.near = 0.5; // default
+  // light.shadow.camera.far = 500; // default
+  const skyColor = 0xb1e1ff; // light blue
+  const groundColor = 0xb97a20; // brownish orange
+  const intensity = 2;
+  const light2 = new THREE.HemisphereLight(skyColor, groundColor, intensity);
+  scene.add(light2);
+
+  const color = 0xFFFFFF;
+  // const intensity2 = 1;
+  const light = new THREE.DirectionalLight(0xFFFFFF, intensity);
+  light.position.set(0, 10, 5);
+  light.target.position.set(-5, 0, 0);
+  scene.add(light);
+  scene.add(light.target);
 }
 
 function createRenderer() {
@@ -157,7 +248,8 @@ function createRenderer() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
 
   renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.shadowMapEnabled = true;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   canvas.appendChild(renderer.domElement);
 }
@@ -167,6 +259,11 @@ function draw() {
   renderer.render(scene, camera);
   // loop draw function call
   requestAnimationFrame(draw);
+
+  cube1.rotation.x += 0.01;
+  cube1.rotation.y += 0.01;
+  cube2.rotation.x += 0.04;
+  cube2.rotation.y += 0.04;
 
   cameraPhysics();
   cubeMovement();
