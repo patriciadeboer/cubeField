@@ -1,4 +1,3 @@
-console.log('hi')
 import * as THREE from 'three';
 import Key from './keyboard'
 let renderer, scene, camera, pointLight, spotLight;
