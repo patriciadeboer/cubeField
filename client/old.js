@@ -18,12 +18,6 @@ clientSocket.on('connect', () => {
 
 gameState = clientSocket.on('update', updatedGameState => {
   gameState = updatedGameState;
-  for (const key in gameState.players) {
-    let player = gameState.players[key];
-    console.log(player);
-    console.log(player.cube1.x);
-    createPlayerCubes(player);
-  }
   return gameState;
 });
 console.log('gameState after update:', gameState);
@@ -129,6 +123,7 @@ function createPlayerCubes(player) {
   cube1.castShadow = true;
   cube1.position.x = player.cube1.x;
   cube1.position.z = player.cube1.z;
+
 }
 
 function createCubes() {

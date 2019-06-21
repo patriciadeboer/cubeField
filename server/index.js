@@ -14,16 +14,27 @@ const server = app.listen(PORT, () =>
 
 var io = socketio(server);
 
+// const socketListener = createSocketListener(server);
+
 io.on('connection', function(socket) {
   console.log('A new client has connected!');
   console.log(socket.id);
 
-  socket.on('newPlayer', () => {
+  socket.on('new-player', () => {
     gameState.players[socket.id] = {
-      x: 250,
-      y: 250,
-      z: 0,
+      cube1: {
+        x: -170+ Math.floor(Math.random()*5),
+        y: 0,
+        z: 30+ Math.floor(Math.random()*5),
+      },
+      cube2: {
+        x: 0,
+        y: 0,
+        z: 30,
+      },
+      imgIdx: Math.floor(Math.random() * 12) + 1,
     };
+    socket.emit('establish-players', gameState);
   });
   console.log(gameState.players);
 
@@ -36,8 +47,8 @@ io.on('connection', function(socket) {
 });
 
 setInterval(() => {
-  io.sockets.emit('state', gameState);
-}, 1000 / 60);
+  io.sockets.emit('update', gameState);
+}, 10);
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('*/imgs', express.static('public/imgs'));
