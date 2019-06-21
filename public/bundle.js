@@ -99,6 +99,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keyboard */ "./client/keyboard.js");
 /* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! socket.io-client */ "./node_modules/socket.io-client/lib/index.js");
 /* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(socket_io_client__WEBPACK_IMPORTED_MODULE_2__);
+/* eslint-disable max-statements */
 /* eslint-disable guard-for-in */
 
 
@@ -119,12 +120,6 @@ clientSocket.on('connect', () => {
 
 gameState = clientSocket.on('update', updatedGameState => {
   gameState = updatedGameState;
-  for (const key in gameState.players) {
-    let player = gameState.players[key];
-    console.log(player);
-    console.log(player.cube1.x);
-    createPlayerCubes(player);
-  }
   return gameState;
 });
 console.log('gameState after update:', gameState);
@@ -133,14 +128,25 @@ clientSocket.on('establish-players', gameState => {
   console.log('gameState in establish players: ', gameState);
   for (const key in gameState.players) {
     let player = gameState.players[key];
-    console.log(player);
+    console.log('player', player);
+    console.log('key', key);
     console.log(player.cube1.x);
-    createPlayerCubes(player);
+    if (key !== clientSocket.id) {
+      createPlayerCubes(player);
+    }
   }
-  // gameState.players.forEach(player=> (
-  //   console.log(player)
-  //   // createCubes(...player,false)
-  // ))
+});
+
+clientSocket.on('create-new-player', player => {
+  console.log('New Player Joined!');
+  console.log(player)
+  createPlayerCubes(player)
+
+  // clientSocket.emit('new-player');
+});
+
+clientSocket.on('move-from-server', () => {
+  cubeMovement();
 });
 
 // clientSocket.on('state', (gameState)=>{
@@ -172,6 +178,7 @@ function init() {
   createScene();
   createCamera();
   createCubes();
+  createCloud();
   createGround();
   createLights();
   // loadModels()
@@ -278,27 +285,6 @@ function createCubes() {
   cube1.castShadow = true;
   cube1.position.x = -170;
   cube1.position.z = cubeDepth;
-
-  imgIdx = Math.floor(Math.random() * 12) + 1;
-  let cube2Material = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({
-    map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
-  });
-  cube2 = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
-    new three__WEBPACK_IMPORTED_MODULE_0__["CubeGeometry"](
-      cubeSize,
-      cubeSize,
-      cubeSize,
-      cubeQuality,
-      cubeQuality,
-      cubeQuality
-    ),
-
-    cube2Material
-  );
-  scene.add(cube2);
-  cube2.receiveShadow = true;
-  cube2.castShadow = true;
-  cube2.position.z = cubeDepth;
 }
 
 function createGround() {
@@ -322,27 +308,9 @@ function createGround() {
   scene.add(table);
   table.receiveShadow = true;
 
-  // let terrain = new THREE.Mesh(
-  //   // new THREE.CubeGeometry(500, 500, 100, 1, 1, 1),
-  //   new THREE.PlaneGeometry(0, 0, 500, 500),
-  //   new THREE.MeshStandardMaterial({
-  //     color: 'green',
-  //     flatShading: true,
-  //     metalness: 0,
-  //     vertexColors: THREE.FaceColors,
-  //   })
-  // );
-
-  // for (let i = 0; i < terrain.geometry.vertices.length; i++) {
-  //   terrain.geometry.vertices[i].setZ(Math.random() * 0.5+50);
-  // }
-  // terrain.position.z = -51; // align terrain with ground
-  // scene.add(terrain);
-  // terrain.receiveShadow = true;
-
   // create the ground's material
   let groundMaterial = new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
-    color: 0x888888,
+    color: 'sienna',
   });
 
   let ground = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
@@ -356,6 +324,39 @@ function createGround() {
   scene.add(ground);
 }
 
+function createCloud() {
+  for (let i = 0; i < 3; i++) {
+    const geo = new three__WEBPACK_IMPORTED_MODULE_0__["Geometry"]();
+
+    const tuft1 = new three__WEBPACK_IMPORTED_MODULE_0__["SphereGeometry"](15, 70, 80);
+    tuft1.translate(0, -20, 0);
+    geo.merge(tuft1);
+
+    const tuft2 = new three__WEBPACK_IMPORTED_MODULE_0__["SphereGeometry"](15, 70, 80);
+    tuft2.translate(0, 20, 0);
+    geo.merge(tuft2);
+
+    const tuft3 = new three__WEBPACK_IMPORTED_MODULE_0__["SphereGeometry"](20, 70, 80);
+    tuft3.translate(0, 0, 0);
+    geo.merge(tuft3);
+
+    const cloud = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
+      geo,
+      new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
+        color: 'white',
+        flatShading: true,
+      })
+    );
+
+    const y = [0, 200, -200];
+    scene.add(cloud);
+    cloud.receiveShadow = true;
+    cloud.castShadow = true;
+    cloud.position.x = 200;
+    cloud.position.y = y[i];
+    cloud.position.z = 100 + Math.floor(Math.random() * 50);
+  }
+}
 function createLights() {
   // // create a point light
   // // pointLight = new THREE.PointLight(0xf8d898);
@@ -424,63 +425,15 @@ function createRenderer() {
   canvas.appendChild(renderer.domElement);
 }
 
-// function loadModels() {
-//   const loader = new THREE.GLTFLoader();
-
-//   // A reusable function to set up the models. We're passing in a position parameter
-//   // so that they can be individually placed around the scene
-//   const onLoad = (gltf, position) => {
-//     const model = gltf.scene.children[0];
-//     model.position.copy(position);
-
-//     const animation = gltf.animations[0];
-
-//     const mixer = new THREE.AnimationMixer(model);
-//     mixers.push(mixer);
-
-//     const action = mixer.clipAction(animation);
-//     action.play();
-
-//     scene.add(model);
-//   };
-
-//   // the loader will report the loading progress to this function
-//   const onProgress = () => {};
-
-//   // the loader will send any error messages to this function, and we'll log
-//   // them to to console
-//   const onError = errorMessage => {
-//     console.log(errorMessage);
-//   };
-
-//   // load the first model. Each model is loaded asynchronously,
-//   // so don't make any assumption about which one will finish loading first
-//   const parrotPosition = new THREE.Vector3(0, 0, 2.5);
-//   loader.load(
-//     'models/Parrot.glb',
-//     gltf => onLoad(gltf, parrotPosition),
-//     onProgress,
-//     onError
-//   );
-
-//   const flamingoPosition = new THREE.Vector3(7.5, 0, -10);
-//   loader.load(
-//     'models/Flamingo.glb',
-//     gltf => onLoad(gltf, flamingoPosition),
-//     onProgress,
-//     onError
-//   );
-
-//   const storkPosition = new THREE.Vector3(0, -2.5, -10);
-//   loader.load(
-//     'models/Stork.glb',
-//     gltf => onLoad(gltf, storkPosition),
-//     onProgress,
-//     onError
-//   );
-// }
+const playerMovement = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+};
 
 function draw() {
+  // console.log('gamestate in draw', gameState)
   // draw THREE.JS scene
   renderer.render(scene, camera);
   // loop draw function call
@@ -488,39 +441,41 @@ function draw() {
 
   cube1.rotation.x += 0.01;
   cube1.rotation.y += 0.01;
-  cube2.rotation.x += 0.015;
-  cube2.rotation.y += 0.015;
+
   // console.log('in draw GameState:', gameState)
   cameraPhysics();
   cubeMovement();
-  cube2Movement();
 }
 
 function cubeMovement() {
   // move left
   if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(37)) {
     cube1.position.y += 1;
+    playerMovement.left = true;
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(39)) {
     cube1.position.y += -1;
+    playerMovement.right = true;
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(38)) {
     cube1.position.x += 1;
+    playerMovement.up = true;
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(40)) {
+    playerMovement.down = true;
     cube1.position.x += -1;
   }
 }
 
-function cube2Movement() {
-  // move left
-  if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].A)) {
-    cube2.position.y += 1;
-  } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].D)) {
-    cube2.position.y += -1;
-  } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].W)) {
-    cube2.position.x += 1;
-  } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].S)) {
-    cube2.position.x += -1;
-  }
-}
+// function cube2Movement() {
+//   // move left
+//   if (Key.isDown(Key.A)) {
+//     cube2.position.y += 1;
+//   } else if (Key.isDown(Key.D)) {
+//     cube2.position.y += -1;
+//   } else if (Key.isDown(Key.W)) {
+//     cube2.position.x += 1;
+//   } else if (Key.isDown(Key.S)) {
+//     cube2.position.x += -1;
+//   }
+// }
 
 // Handles camera and lighting logic
 function cameraPhysics() {

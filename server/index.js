@@ -23,9 +23,9 @@ io.on('connection', function(socket) {
   socket.on('new-player', () => {
     gameState.players[socket.id] = {
       cube1: {
-        x: -170+ Math.floor(Math.random()*5),
-        y: 0,
-        z: 30+ Math.floor(Math.random()*5),
+        x: -170 + Math.floor(Math.random() * 100),
+        y: Math.floor(Math.random() * 20),
+        z: 30 + Math.floor(Math.random() * 50),
       },
       cube2: {
         x: 0,
@@ -34,9 +34,15 @@ io.on('connection', function(socket) {
       },
       imgIdx: Math.floor(Math.random() * 12) + 1,
     };
-    socket.emit('establish-players', gameState);
+    socket.emit('establish-players', gameState); //only to person just connected
+    socket.broadcast.emit('create-new-player', gameState.players[socket.id])
   });
   console.log(gameState.players);
+
+  socket.on('draw-from-client', () => {
+    //SEND XYZ
+    socket.broadcast.emit('move-from-server');
+  });
 
   socket.on('disconnect', function() {
     console.log('user disconnected');
@@ -48,7 +54,7 @@ io.on('connection', function(socket) {
 
 setInterval(() => {
   io.sockets.emit('update', gameState);
-}, 10);
+}, 100);
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('*/imgs', express.static('public/imgs'));
