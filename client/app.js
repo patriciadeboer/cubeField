@@ -2,14 +2,15 @@ import * as THREE from 'three';
 import Key from './keyboard';
 import createClientSocket from 'socket.io-client';
 
-
+// import {GLTFLoader} from 'three'
+import { GLTFLoader } from 'three-gltf-loader';
 
 const clientSocket = createClientSocket(window.location.origin);
 const cubeField = window.location.pathname;
 
 clientSocket.on('connect', () => {
   console.log('Connected to server!');
-  clientSocket.emit('newPlayer')
+  clientSocket.emit('newPlayer');
 });
 
 let renderer, scene, camera, pointLight, spotLight;
@@ -30,6 +31,7 @@ function init() {
   createCubes();
   createGround();
   createLights();
+  // loadModels()
   createRenderer();
 
   //animate and move
@@ -56,15 +58,30 @@ function createCamera() {
 }
 
 function createCubes() {
+  // for (let i = 0; i < 3; i++) {
   const loader = new THREE.TextureLoader();
-  // let cube1Material = new THREE.MeshBasicMaterial({ color: 'coral' });
-  let cube1Material = new THREE.MeshBasicMaterial({
-    map: loader.load('../public/imgs/patricia.jpg'),
-  });
-  let cube2Material = new THREE.MeshBasicMaterial({
-    map: loader.load('../public/imgs/giraffe.jpg'),
-  });
 
+  let imgIdx = Math.floor(Math.random() * 12) + 1;
+  let cube1Material = new THREE.MeshBasicMaterial({
+    map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
+  });
+  console.log(imgIdx);
+  // const materials = [
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
+  //   }),
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
+  //   }),
+  //   new THREE.MeshBasicMaterial({ color: 'black' }),
+  //   new THREE.MeshBasicMaterial({ color: 'black' }),
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
+  //   }),
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
+  //   }),
+  // ];
   cubeSize = 30;
   cubeHeight = 30;
   cubeDepth = 30;
@@ -88,7 +105,60 @@ function createCubes() {
   cube1.castShadow = true;
   cube1.position.x = -170;
   cube1.position.z = cubeDepth;
+  // }
+  // // let cube1Material = new THREE.MeshBasicMaterial({ color: 'coral' });
+  // let cube1Material = new THREE.MeshBasicMaterial({
+  //   map: loader.load('../public/imgs/patricia.jpg'),
+  // });
+  // let cube2Material = new THREE.MeshBasicMaterial({
+  //   map: loader.load('../public/imgs/animal1.jpg'),
+  // });
 
+  // const materials = [
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load('../public/imgs/patricia.jpg'),
+  //   }),
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load('../public/imgs/patricia.jpg'),
+  //   }),
+  //   new THREE.MeshBasicMaterial({ color: 'black' }),
+  //   new THREE.MeshBasicMaterial({ color: 'black' }),
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load('../public/imgs/patricia.jpg'),
+  //   }),
+  //   new THREE.MeshBasicMaterial({
+  //     map: loader.load('../public/imgs/patricia.jpg'),
+  //   }),
+  // ];
+
+  // cubeSize = 30;
+  // cubeHeight = 30;
+  // cubeDepth = 30;
+  // cubeQuality = 1;
+
+  // cube1 = new THREE.Mesh(
+  //   new THREE.CubeGeometry(
+  //     cubeSize,
+  //     cubeSize,
+  //     cubeSize,
+  //     cubeQuality,
+  //     cubeQuality,
+  //     cubeQuality
+  //   ),
+
+  //   materials
+  // );
+
+  // scene.add(cube1);
+  // cube1.receiveShadow = true;
+  // cube1.castShadow = true;
+  // cube1.position.x = -170;
+  // cube1.position.z = cubeDepth;
+
+  imgIdx = Math.floor(Math.random() * 12) + 1;
+  let cube2Material = new THREE.MeshBasicMaterial({
+    map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
+  });
   cube2 = new THREE.Mesh(
     new THREE.CubeGeometry(
       cubeSize,
@@ -105,17 +175,11 @@ function createCubes() {
   cube2.receiveShadow = true;
   cube2.castShadow = true;
   cube2.position.z = cubeDepth;
-
 }
 
 function createGround() {
   let tableMaterial = new THREE.MeshLambertMaterial({
     color: 'green',
-  });
-
-  // create the ground's material
-  let groundMaterial = new THREE.MeshLambertMaterial({
-    color: 0x888888,
   });
 
   let table = new THREE.Mesh(
@@ -130,9 +194,32 @@ function createGround() {
 
     tableMaterial
   );
-  table.position.z = -51; // we sink the table into the ground by 50 units. The extra 1 is so the plane can be seen
+  table.position.z = -51; // we sink the table into the ground
   scene.add(table);
   table.receiveShadow = true;
+
+  // let terrain = new THREE.Mesh(
+  //   // new THREE.CubeGeometry(500, 500, 100, 1, 1, 1),
+  //   new THREE.PlaneGeometry(0, 0, 500, 500),
+  //   new THREE.MeshStandardMaterial({
+  //     color: 'green',
+  //     flatShading: true,
+  //     metalness: 0,
+  //     vertexColors: THREE.FaceColors,
+  //   })
+  // );
+
+  // for (let i = 0; i < terrain.geometry.vertices.length; i++) {
+  //   terrain.geometry.vertices[i].setZ(Math.random() * 0.5+50);
+  // }
+  // terrain.position.z = -51; // align terrain with ground
+  // scene.add(terrain);
+  // terrain.receiveShadow = true;
+
+  // create the ground's material
+  let groundMaterial = new THREE.MeshLambertMaterial({
+    color: 0x888888,
+  });
 
   let ground = new THREE.Mesh(
     new THREE.CubeGeometry(1000, 1000, 3, 1, 1, 1),
@@ -211,6 +298,62 @@ function createRenderer() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   canvas.appendChild(renderer.domElement);
+}
+
+function loadModels() {
+  const loader = new THREE.GLTFLoader();
+
+  // A reusable function to set up the models. We're passing in a position parameter
+  // so that they can be individually placed around the scene
+  const onLoad = (gltf, position) => {
+    const model = gltf.scene.children[0];
+    model.position.copy(position);
+
+    const animation = gltf.animations[0];
+
+    const mixer = new THREE.AnimationMixer(model);
+    mixers.push(mixer);
+
+    const action = mixer.clipAction(animation);
+    action.play();
+
+    scene.add(model);
+  };
+
+  // the loader will report the loading progress to this function
+  const onProgress = () => {};
+
+  // the loader will send any error messages to this function, and we'll log
+  // them to to console
+  const onError = errorMessage => {
+    console.log(errorMessage);
+  };
+
+  // load the first model. Each model is loaded asynchronously,
+  // so don't make any assumption about which one will finish loading first
+  const parrotPosition = new THREE.Vector3(0, 0, 2.5);
+  loader.load(
+    'models/Parrot.glb',
+    gltf => onLoad(gltf, parrotPosition),
+    onProgress,
+    onError
+  );
+
+  const flamingoPosition = new THREE.Vector3(7.5, 0, -10);
+  loader.load(
+    'models/Flamingo.glb',
+    gltf => onLoad(gltf, flamingoPosition),
+    onProgress,
+    onError
+  );
+
+  const storkPosition = new THREE.Vector3(0, -2.5, -10);
+  loader.load(
+    'models/Stork.glb',
+    gltf => onLoad(gltf, storkPosition),
+    onProgress,
+    onError
+  );
 }
 
 function draw() {
