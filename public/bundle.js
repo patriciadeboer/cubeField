@@ -151,12 +151,12 @@ clientSocket.on('delete-player', player => {
   //Remove Cube
   console.log('delete player: ', player);
   // console.log(gameState);
-  deletePlayerCube(player)
-
+  deletePlayerCube(player);
 });
 
-clientSocket.on('move-from-server', () => {
-  cubeMovement();
+clientSocket.on('player-move-from-server', player => {
+  console.log('movement from server:', player);
+  movePlayerCube(player)
 });
 
 // clientSocket.on('state', (gameState)=>{
@@ -242,13 +242,12 @@ function createPlayerCubes(player) {
     playersCubeMaterial
   );
 
-
   scene.add(playersCubes[player.id]);
   playersCubes[player.id].receiveShadow = true;
   playersCubes[player.id].castShadow = true;
   playersCubes[player.id].position.x = player.cube.x;
   playersCubes[player.id].position.z = player.cube.z;
-  console.log(playersCubes)
+  console.log(playersCubes);
 }
 
 function createCubes(player) {
@@ -335,8 +334,13 @@ function createGround() {
   scene.add(ground);
 }
 
-function deletePlayerCube(player){
-  scene.remove(playersCubes[player.id])
+function movePlayerCube(player){
+  playersCubes[player.id].position.x = player.cube.x
+  playersCubes[player.id].position.y = player.cube.y
+}
+
+function deletePlayerCube(player) {
+  scene.remove(playersCubes[player.id]);
 }
 
 function createCloud() {
