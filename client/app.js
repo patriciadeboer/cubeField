@@ -3,8 +3,10 @@
 import * as THREE from 'three';
 import Key from './keyboard';
 import createClientSocket from 'socket.io-client';
+// import { Socket } from 'net';
 
-let gameState = {};
+// let gameState = {};
+let playersCubes = {};
 // import {GLTFLoader} from 'three'
 // import { GLTFLoader } from 'three-gltf-loader';
 
@@ -30,25 +32,27 @@ clientSocket.on('establish-players', gameState => {
     // console.log(player.cube1.x);
     if (key !== clientSocket.id) {
       createPlayerCubes(player);
-    }else{
-      createCubes(player)
+    } else {
+      createCubes(player);
     }
   }
 });
 
 clientSocket.on('create-new-player', player => {
-  console.log('New player joined:', player)
-  console.log(gameState)
-  createPlayerCubes(player)
+  console.log('New player joined:', player);
+  // console.log(gameState);
+  createPlayerCubes(player);
 
   // clientSocket.emit('new-player');
 });
 
-clientSocket.on('delete-player', (player)=>{
+clientSocket.on('delete-player', player => {
   //Remove Cube
-  console.log('delete player: ', player)
-  console.log(gameState)
-})
+  console.log('delete player: ', player);
+  // console.log(gameState);
+  deletePlayerCube(player)
+
+});
 
 clientSocket.on('move-from-server', () => {
   cubeMovement();
@@ -124,7 +128,7 @@ function createPlayerCubes(player) {
   cubeDepth = 30;
   cubeQuality = 1;
 
-  let playersCube= new THREE.Mesh(
+  playersCubes[player.id] = new THREE.Mesh(
     new THREE.CubeGeometry(
       cubeSize,
       cubeSize,
@@ -137,16 +141,17 @@ function createPlayerCubes(player) {
     playersCubeMaterial
   );
 
-  scene.add(playersCube);
-  playersCube.receiveShadow = true;
-  playersCube.castShadow = true;
-  playersCube.position.x = player.cube.x;
-  playersCube.position.z = player.cube.z;
+
+  scene.add(playersCubes[player.id]);
+  playersCubes[player.id].receiveShadow = true;
+  playersCubes[player.id].castShadow = true;
+  playersCubes[player.id].position.x = player.cube.x;
+  playersCubes[player.id].position.z = player.cube.z;
+  console.log(playersCubes)
 }
 
 function createCubes(player) {
   const loader = new THREE.TextureLoader();
-
 
   let cube1Material = new THREE.MeshBasicMaterial({
     map: loader.load(`../public/imgs/animal${player.imgIdx}.jpg`),
@@ -227,6 +232,10 @@ function createGround() {
   ground.position.z = -132;
   ground.receiveShadow = true;
   scene.add(ground);
+}
+
+function deletePlayerCube(player){
+  scene.remove(playersCubes[player.id])
 }
 
 function createCloud() {
@@ -357,15 +366,43 @@ function cubeMovement() {
   if (Key.isDown(37)) {
     cube1.position.y += 1;
     playerMovement.left = true;
+    clientSocket.emit('playerMovement', {
+      id: clientSocket.id,
+      cube: {
+        x: cube1.position.x,
+        y: cube1.position.y,
+      },
+    });
   } else if (Key.isDown(39)) {
     cube1.position.y += -1;
     playerMovement.right = true;
+    clientSocket.emit('playerMovement', {
+      id: clientSocket.id,
+      cube: {
+        x: cube1.position.x,
+        y: cube1.position.y,
+      },
+    });
   } else if (Key.isDown(38)) {
     cube1.position.x += 1;
     playerMovement.up = true;
+    clientSocket.emit('playerMovement', {
+      id: clientSocket.id,
+      cube: {
+        x: cube1.position.x,
+        y: cube1.position.y,
+      },
+    });
   } else if (Key.isDown(40)) {
     playerMovement.down = true;
     cube1.position.x += -1;
+    clientSocket.emit('playerMovement', {
+      id: clientSocket.id,
+      cube: {
+        x: cube1.position.x,
+        y: cube1.position.y,
+      },
+    });
   }
 }
 

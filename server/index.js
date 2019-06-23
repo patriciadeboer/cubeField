@@ -35,9 +35,10 @@ io.on('connection', function(socket) {
     console.log(gameState.players);
   });
 
-  socket.on('draw-from-client', () => {
+  socket.on('playerMovement', (player) => {
     //SEND XYZ
-    socket.broadcast.emit('move-from-server');
+    console.log(player)
+    //socket.broadcast.emit('move-from-server');
   });
 
   socket.on('disconnect', function() {
@@ -47,9 +48,9 @@ io.on('connection', function(socket) {
   });
 });
 
-// setInterval(() => {
-//   io.sockets.emit('update', gameState);
-// }, 100);
+setInterval(() => {
+  io.sockets.emit('update', gameState);
+}, 100);
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('*/imgs', express.static('public/imgs'));
