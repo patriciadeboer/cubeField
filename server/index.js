@@ -22,22 +22,18 @@ io.on('connection', function(socket) {
 
   socket.on('new-player', () => {
     gameState.players[socket.id] = {
-      cube1: {
-        x: -170 + Math.floor(Math.random() * 100),
-        y: Math.floor(Math.random() * 20),
-        z: 30 + Math.floor(Math.random() * 50),
+      cube: {
+        x: Math.floor(Math.random() * 400) - 300,
+        y: Math.floor(Math.random() * 600) - 300,
+        z: 30 + Math.floor(Math.random() * 75),
       },
-      cube2: {
-        x: 0,
-        y: 0,
-        z: 30,
-      },
+      id: socket.id,
       imgIdx: Math.floor(Math.random() * 12) + 1,
     };
     socket.emit('establish-players', gameState); //only to person just connected
-    socket.broadcast.emit('create-new-player', gameState.players[socket.id])
+    socket.broadcast.emit('create-new-player', gameState.players[socket.id]);
+    console.log(gameState.players);
   });
-  console.log(gameState.players);
 
   socket.on('draw-from-client', () => {
     //SEND XYZ
@@ -45,16 +41,15 @@ io.on('connection', function(socket) {
   });
 
   socket.on('disconnect', function() {
-    console.log('user disconnected');
-    console.log(socket.id);
+    console.log('user disconnected', socket.id);
+    socket.broadcast.emit('delete-player', gameState.players[socket.id]);
     delete gameState.players[socket.id];
-    console.log(gameState.players);
   });
 });
 
-setInterval(() => {
-  io.sockets.emit('update', gameState);
-}, 100);
+// setInterval(() => {
+//   io.sockets.emit('update', gameState);
+// }, 100);
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('*/imgs', express.static('public/imgs'));

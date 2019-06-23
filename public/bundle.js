@@ -113,37 +113,43 @@ const clientSocket = socket_io_client__WEBPACK_IMPORTED_MODULE_2___default()(win
 const cubeField = window.location.pathname;
 
 clientSocket.on('connect', () => {
-  console.log('Connected to server!');
-  console.log('clientSocket: ', clientSocket.id);
+  console.log('Connected to server! client Socket: ', clientSocket.id);
   clientSocket.emit('new-player');
 });
 
-gameState = clientSocket.on('update', updatedGameState => {
-  gameState = updatedGameState;
-  return gameState;
-});
-console.log('gameState after update:', gameState);
+// clientSocket.on('update', updatedGameState => {
+//   gameState = updatedGameState;
+//   return gameState;
+// });
 
 clientSocket.on('establish-players', gameState => {
   console.log('gameState in establish players: ', gameState);
   for (const key in gameState.players) {
     let player = gameState.players[key];
-    console.log('player', player);
-    console.log('key', key);
-    console.log(player.cube1.x);
+    // console.log('player', player);
+    // console.log('key', key);
+    // console.log(player.cube1.x);
     if (key !== clientSocket.id) {
       createPlayerCubes(player);
+    }else{
+      createCubes(player)
     }
   }
 });
 
 clientSocket.on('create-new-player', player => {
-  console.log('New Player Joined!');
-  console.log(player)
+  console.log('New player joined:', player)
+  console.log(gameState)
   createPlayerCubes(player)
 
   // clientSocket.emit('new-player');
 });
+
+clientSocket.on('delete-player', (player)=>{
+  //Remove Cube
+  console.log('delete player: ', player)
+  console.log(gameState)
+})
 
 clientSocket.on('move-from-server', () => {
   cubeMovement();
@@ -177,7 +183,7 @@ function init() {
   container = document.querySelector('#field');
   createScene();
   createCamera();
-  createCubes();
+  // createCubes();
   createCloud();
   createGround();
   createLights();
@@ -208,9 +214,9 @@ function createCamera() {
 }
 
 function createPlayerCubes(player) {
-  console.log('player in createPlayerCubes', player);
+  console.log('In createPlayerCubes, create this player:', player);
   const loader = new three__WEBPACK_IMPORTED_MODULE_0__["TextureLoader"]();
-  let cube1Material = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({
+  let playersCubeMaterial = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({
     map: loader.load(`../public/imgs/animal${player.imgIdx}.jpg`),
   });
 
@@ -219,7 +225,7 @@ function createPlayerCubes(player) {
   cubeDepth = 30;
   cubeQuality = 1;
 
-  cube1 = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
+  let playersCube= new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
     new three__WEBPACK_IMPORTED_MODULE_0__["CubeGeometry"](
       cubeSize,
       cubeSize,
@@ -229,22 +235,22 @@ function createPlayerCubes(player) {
       cubeQuality
     ),
 
-    cube1Material
+    playersCubeMaterial
   );
 
-  scene.add(cube1);
-  cube1.receiveShadow = true;
-  cube1.castShadow = true;
-  cube1.position.x = player.cube1.x;
-  cube1.position.z = player.cube1.z;
+  scene.add(playersCube);
+  playersCube.receiveShadow = true;
+  playersCube.castShadow = true;
+  playersCube.position.x = player.cube.x;
+  playersCube.position.z = player.cube.z;
 }
 
-function createCubes() {
+function createCubes(player) {
   const loader = new three__WEBPACK_IMPORTED_MODULE_0__["TextureLoader"]();
 
-  let imgIdx = Math.floor(Math.random() * 12) + 1;
+
   let cube1Material = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({
-    map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
+    map: loader.load(`../public/imgs/animal${player.imgIdx}.jpg`),
   });
   // const materials = [
   //   new THREE.MeshBasicMaterial({
@@ -283,30 +289,30 @@ function createCubes() {
   scene.add(cube1);
   cube1.receiveShadow = true;
   cube1.castShadow = true;
-  cube1.position.x = -170;
-  cube1.position.z = cubeDepth;
+  cube1.position.x = player.cube.x;
+  cube1.position.z = player.cube.z;
 }
 
 function createGround() {
-  let tableMaterial = new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
+  let grassMaterial = new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
     color: 'green',
   });
 
-  let table = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
+  let grass = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
     new three__WEBPACK_IMPORTED_MODULE_0__["CubeGeometry"](
-      500, // this creates the feel of a billiards table, with a lining
       500,
-      20, // an arbitrary depth, the camera can't see much of it anyway
+      500,
+      50, // depth to show 3D
       15,
       15,
       1
     ),
 
-    tableMaterial
+    grassMaterial
   );
-  table.position.z = -51; // we sink the table into the ground
-  scene.add(table);
-  table.receiveShadow = true;
+  grass.position.z = -51; // we sink the grass into the ground
+  scene.add(grass);
+  grass.receiveShadow = true;
 
   // create the ground's material
   let groundMaterial = new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
@@ -439,6 +445,7 @@ function draw() {
   // loop draw function call
   requestAnimationFrame(draw);
 
+  console.log('cube1', cube1)
   cube1.rotation.x += 0.01;
   cube1.rotation.y += 0.01;
 
