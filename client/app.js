@@ -24,7 +24,7 @@ clientSocket.on('connect', () => {
 // });
 
 clientSocket.on('establish-players', gameState => {
-  console.log('gameState in establish players: ', gameState);
+  // console.log('gameState in establish players: ', gameState);
   for (const key in gameState.players) {
     let player = gameState.players[key];
     // console.log('player', player);
