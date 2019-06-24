@@ -485,7 +485,7 @@ function onWindowResize() {
 
   // update the size of the renderer AND the canvas
   renderer.setSize(container.clientWidth, container.clientHeight);
-  console.log('You resized the browser window!');
+
 }
 
 init();
