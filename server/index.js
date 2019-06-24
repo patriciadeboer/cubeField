@@ -9,16 +9,13 @@ const gameState = {
 };
 
 const server = app.listen(PORT, () =>
-  console.log(`listening on port http://localhost:${PORT}`)
+  console.log(`hanging out on port http://localhost:${PORT}`)
 );
 
 var io = socketio(server);
 
-// const socketListener = createSocketListener(server);
-
 io.on('connection', function(socket) {
-  console.log('A new client has connected!');
-  console.log(socket.id);
+  console.log('A new client has connected! - ', socket.id);
 
   socket.on('new-player', () => {
     gameState.players[socket.id] = {
@@ -32,27 +29,23 @@ io.on('connection', function(socket) {
     };
     socket.emit('establish-players', gameState); //only to person just connected
     socket.broadcast.emit('create-new-player', gameState.players[socket.id]);
-    console.log(gameState.players);
+    // console.log(gameState.players);
   });
 
   socket.on('playerMovement', (player) => {
     //SEND XYZ
-    console.log(player)
+    // console.log(player)
     gameState.players[socket.id].cube.x =player.cube.x
     gameState.players[socket.id].cube.y =player.cube.y
     socket.broadcast.emit('player-move-from-server', player);
   });
 
   socket.on('disconnect', function() {
-    console.log('user disconnected', socket.id);
+    console.log('user disconnected: ', socket.id);
     socket.broadcast.emit('delete-player', gameState.players[socket.id]);
     delete gameState.players[socket.id];
   });
 });
-
-// setInterval(() => {
-//   io.sockets.emit('update', gameState);
-// }, 100);
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('*/imgs', express.static('public/imgs'));

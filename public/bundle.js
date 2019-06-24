@@ -104,33 +104,20 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-// import { Socket } from 'net';
 
-// let gameState = {};
+
 let playersCubes = {};
-// import {GLTFLoader} from 'three'
-// import { GLTFLoader } from 'three-gltf-loader';
 
 const clientSocket = socket_io_client__WEBPACK_IMPORTED_MODULE_2___default()(window.location.origin);
-const cubeField = window.location.pathname;
+// const cubeField = window.location.pathname;
 
 clientSocket.on('connect', () => {
-  console.log('Connected to server! client Socket: ', clientSocket.id);
   clientSocket.emit('new-player');
 });
 
-// clientSocket.on('update', updatedGameState => {
-//   gameState = updatedGameState;
-//   return gameState;
-// });
-
 clientSocket.on('establish-players', gameState => {
-  // console.log('gameState in establish players: ', gameState);
   for (const key in gameState.players) {
     let player = gameState.players[key];
-    // console.log('player', player);
-    // console.log('key', key);
-    // console.log(player.cube1.x);
     if (key !== clientSocket.id) {
       createPlayerCubes(player);
     } else {
@@ -141,57 +128,34 @@ clientSocket.on('establish-players', gameState => {
 
 clientSocket.on('create-new-player', player => {
   console.log('New player joined:', player);
-  // console.log(gameState);
   createPlayerCubes(player);
-
-  // clientSocket.emit('new-player');
 });
 
 clientSocket.on('delete-player', player => {
   //Remove Cube
-  console.log('delete player: ', player);
-  // console.log(gameState);
   deletePlayerCube(player);
 });
 
 clientSocket.on('player-move-from-server', player => {
-  console.log('movement from server:', player);
   movePlayerCube(player);
 });
 
-// clientSocket.on('state', (gameState)=>{
-//   // for(let player in gameState.players){
-//     // console.log(gameState)
-//     // createCubes(gameState.players[player])
-//   // }
-//   console.log(gameState)
-// })
-// clientSocket.on('move-from-server'){
-
-// }
-
-// clientSocket.on('move',)
-
 let renderer, scene, camera, pointLight, spotLight;
 
-let cubeSize, cubeWidth, cubeHeight, cubeDepth, cubeQuality;
+let cubeSize, cubeQuality;
 
-let cube1, cube2;
+let cube1;
 
 let container;
-let renderer2;
-let mesh;
 
 function init() {
   //initialize all the elements for the scene
   container = document.querySelector('#field');
   createScene();
   createCamera();
-  // createCubes();
   createCloud();
   createGround();
   createLights();
-  // loadModels()
   createTrees();
   createRenderer();
 
@@ -219,15 +183,12 @@ function createCamera() {
 }
 
 function createPlayerCubes(player) {
-  console.log('In createPlayerCubes, create this player:', player);
   const loader = new three__WEBPACK_IMPORTED_MODULE_0__["TextureLoader"]();
   let playersCubeMaterial = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({
     map: loader.load(`../public/imgs/animal${player.imgIdx}.jpg`),
   });
 
   cubeSize = 30;
-  cubeHeight = 30;
-  cubeDepth = 30;
   cubeQuality = 1;
 
   playersCubes[player.id] = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
@@ -249,8 +210,6 @@ function createPlayerCubes(player) {
   playersCubes[player.id].position.x = player.cube.x;
   playersCubes[player.id].position.z = player.cube.z;
   playersCubes[player.id].rotation.x = Math.PI / 2;
-
-  console.log(playersCubes);
 }
 
 function createCubes(player) {
@@ -259,25 +218,8 @@ function createCubes(player) {
   let cube1Material = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({
     map: loader.load(`../public/imgs/animal${player.imgIdx}.jpg`),
   });
-  // const materials = [
-  //   new THREE.MeshBasicMaterial({
-  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
-  //   }),
-  //   new THREE.MeshBasicMaterial({
-  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
-  //   }),
-  //   new THREE.MeshBasicMaterial({ color: 'black' }),
-  //   new THREE.MeshBasicMaterial({ color: 'black' }),
-  //   new THREE.MeshBasicMaterial({
-  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
-  //   }),
-  //   new THREE.MeshBasicMaterial({
-  //     map: loader.load(`../public/imgs/animal${imgIdx}.jpg`),
-  //   }),
-  // ];
+
   cubeSize = 30;
-  cubeHeight = 30;
-  cubeDepth = 30;
   cubeQuality = 1;
 
   cube1 = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
@@ -317,7 +259,7 @@ function createGround() {
 
     grassMaterial
   );
-  grass.position.z = -51; // we sink the grass into the ground
+  grass.position.z = -51;
   scene.add(grass);
   grass.receiveShadow = true;
 
@@ -332,7 +274,7 @@ function createGround() {
     groundMaterial
   );
   // set ground to arbitrary z position to best show off shadowing
-  ground.position.z = -132;
+  ground.position.z = -50;
   ground.receiveShadow = true;
   scene.add(ground);
 }
@@ -393,14 +335,17 @@ function createLights() {
   // // scene.add(pointLight);
 
   // // add a spot light
-  // // this is important for casting shadows
-  // spotLight = new THREE.SpotLight(0xf8d898);
-  // spotLight.position.set(0, 0, 460);
-  // spotLight.intensity = 10;
-  // spotLight.shadowDarkness = .5;
-  // spotLight.shadowCameraVisible=true
-  // spotLight.castShadow = true;
-  // scene.add(spotLight);
+  // this is important for casting shadows
+  spotLight = new three__WEBPACK_IMPORTED_MODULE_0__["SpotLight"](0xf8d898);
+  spotLight.position.set(0, 0, 460);
+  spotLight.intensity = 10;
+  spotLight.shadowDarkness = 0.2;
+  spotLight.shadowCameraVisible = true;
+  // spotLight.shadow.radius = 50;
+  spotLight.shadow.mapSize.width = 1024;
+  spotLight.shadow.mapSize.height = 1024;
+  spotLight.castShadow = true;
+  scene.add(spotLight);
 
   // // const light2 = new THREE.DirectionalLight(0xffffff, 5.0);
 
@@ -420,19 +365,35 @@ function createLights() {
   // light.shadow.mapSize.height = 512; // default
   // light.shadow.camera.near = 0.5; // default
   // light.shadow.camera.far = 500; // default
+  const intensity = 2;
   const skyColor = 0xb1e1ff; // light blue
   const groundColor = 0xb97a20; // brownish orange
-  const intensity = 2;
-  const light2 = new three__WEBPACK_IMPORTED_MODULE_0__["HemisphereLight"](skyColor, groundColor, intensity);
-  scene.add(light2);
+  const hemisphereLight = new three__WEBPACK_IMPORTED_MODULE_0__["HemisphereLight"](
+    skyColor,
+    groundColor,
+    intensity
+  );
+  scene.add(hemisphereLight);
 
-  const color = 0xffffff;
-  // const intensity2 = 1;
-  const light = new three__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"](0xffffff, intensity);
-  light.position.set(0, 10, 5);
-  light.target.position.set(-5, 0, 0);
-  scene.add(light);
-  scene.add(light.target);
+  // const light = new THREE.DirectionalLight(0xffffff, intensity);
+  // light.position.set(0, 0, 400);
+  // light.target.position.set(-5, 0, 0);
+  // scene.add(light);
+  // scene.add(light.target);
+
+  //Correct lights
+
+  //Create a PointLight and turn on shadows for the light
+  // var light2 = new THREE.PointLight( 0xffffff, 1, 100 )
+  // light2.position.set(0, 0, 400);
+  // light2.castShadow = true; // default false
+  // scene.add(light2);
+
+  // //Set up shadow properties for the light2
+  // light2.shadow.mapSize.width = 512; // default
+  // light2.shadow.mapSize.height = 512; // default
+  // light2.shadow.camera.near = 0.5; // default
+  // light2.shadow.camera.far = 500; // default
 }
 
 function createTrees() {
@@ -443,7 +404,7 @@ function createTrees() {
     // let material = new THREE.MeshBasicMaterial({ color: 0x654321});
     let material = new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
       color: 0x654321,
-      flatShading: true,
+      // flatShading: true,
     });
 
     // let x = Math.floor(Math.random() * 600) - 300;
@@ -455,39 +416,32 @@ function createTrees() {
     cylinder.rotation.x = Math.PI / 2;
     cylinder.position.x = x[i];
     cylinder.position.y = y[i];
-    cylinder.position.z = -10;
+    cylinder.position.z = -20;
+    cylinder.castShadow = true;
+    cylinder.receiveShadow = true;
     scene.add(cylinder);
 
     let geometrySphere = new three__WEBPACK_IMPORTED_MODULE_0__["SphereGeometry"](15, 10, 10);
     let treeTop = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({ color: 0x32cd32 });
     let sphere = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](geometrySphere, treeTop);
-    sphere.position.z = 10;
+    sphere.position.z = -2;
     sphere.position.x = x[i];
     sphere.position.y = y[i];
+    sphere.castShadow = true;
+    sphere.receiveShadow = true;
     scene.add(sphere);
   }
 }
 
-// function addTree(){}
-// let loader = new THREE.FBXLoader();
-// loader.load('models/fbx/Samba Dancing.fbx', function(object) {
-//   mixer = new THREE.AnimationMixer(object);
-//   var action = mixer.clipAction(object.animations[0]);
-//   action.play();
-//   object.traverse(function(child) {
-//     if (child.isMesh) {
-//       child.castShadow = true;
-//       child.receiveShadow = true;
-//     }
-//   });
-//   scene.add(object);
-// });
-
 function createRenderer() {
   let canvas = document.getElementById('field');
 
-  renderer = new three__WEBPACK_IMPORTED_MODULE_0__["WebGLRenderer"]({ antialias: true });
+  renderer = new three__WEBPACK_IMPORTED_MODULE_0__["WebGLRenderer"]({
+    antialias: true,
+    // physicallyCorrectLights: true,
+  });
 
+  renderer.physicallyCorrectLights = true;
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = three__WEBPACK_IMPORTED_MODULE_0__["PCFSoftShadowMap"];
