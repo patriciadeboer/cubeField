@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 const socketio = require('socket.io');
 
 const gameState = {
