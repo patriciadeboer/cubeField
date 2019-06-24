@@ -248,6 +248,8 @@ function createPlayerCubes(player) {
   playersCubes[player.id].castShadow = true;
   playersCubes[player.id].position.x = player.cube.x;
   playersCubes[player.id].position.z = player.cube.z;
+  playersCubes[player.id].rotation.x = Math.PI / 2;
+
   console.log(playersCubes);
 }
 
@@ -453,7 +455,7 @@ function createTrees() {
     cylinder.rotation.x = Math.PI / 2;
     cylinder.position.x = x[i];
     cylinder.position.y = y[i];
-    cylinder.position.z=-10
+    cylinder.position.z = -10;
     scene.add(cylinder);
 
     let geometrySphere = new three__WEBPACK_IMPORTED_MODULE_0__["SphereGeometry"](15, 10, 10);
@@ -557,6 +559,16 @@ function cubeMovement() {
         y: cube1.position.y,
       },
     });
+  } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(32)) {
+    // playerMovement.down = true;
+    cube1.position.z += -1;
+    // clientSocket.emit('playerMovement', {
+    //   id: clientSocket.id,
+    //   cube: {
+    //     x: cube1.position.x,
+    //     y: cube1.position.y,
+    //   },
+    // });
   }
 }
 
