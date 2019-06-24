@@ -163,9 +163,6 @@ function draw() {
   renderer.render(scene, camera);
   requestAnimationFrame(draw);
 
-  // cube1.rotation.x += 0.01;
-  // cube1.rotation.y += 0.01;
-
   cameraPhysics();
   cubeMovement();
 }
@@ -251,6 +248,7 @@ function createCubes(player) {
 function movePlayerCube(player) {
   playersCubes[player.id].position.x = player.cube.x;
   playersCubes[player.id].position.y = player.cube.y;
+  playersCubes[player.id].position.z = player.cube.z;
 }
 
 function deletePlayerCube(player) {
@@ -405,6 +403,7 @@ function cubeMovement() {
       cube: {
         x: cube1.position.x,
         y: cube1.position.y,
+        z: cube1.position.z,
       },
     });
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(39)) {
@@ -414,6 +413,7 @@ function cubeMovement() {
       cube: {
         x: cube1.position.x,
         y: cube1.position.y,
+        z: cube1.position.z,
       },
     });
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(38)) {
@@ -423,6 +423,7 @@ function cubeMovement() {
       cube: {
         x: cube1.position.x,
         y: cube1.position.y,
+        z: cube1.position.z,
       },
     });
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(40)) {
@@ -432,20 +433,29 @@ function cubeMovement() {
       cube: {
         x: cube1.position.x,
         y: cube1.position.y,
+        z: cube1.position.z,
       },
     });
-  } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(32)) {
-    // playerMovement.down = true;
+  } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].SPACE)) {
     cube1.position.z += -1;
-    // clientSocket.emit('playerMovement', {
-    //   id: clientSocket.id,
-    //   cube: {
-    //     x: cube1.position.x,
-    //     y: cube1.position.y,
-    //   },
-    // });
+    clientSocket.emit('playerMovement', {
+      id: clientSocket.id,
+      cube: {
+        x: cube1.position.x,
+        y: cube1.position.y,
+        z: cube1.position.z,
+      },
+    });
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].SHIFT)) {
     cube1.position.z += 1;
+    clientSocket.emit('playerMovement', {
+      id: clientSocket.id,
+      cube: {
+        x: cube1.position.x,
+        y: cube1.position.y,
+        z: cube1.position.z,
+      },
+    });
   }
   cube1.rotation.x += 0.01;
   cube1.rotation.y += 0.01;
