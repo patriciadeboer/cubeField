@@ -125,7 +125,7 @@ clientSocket.on('connect', () => {
 // });
 
 clientSocket.on('establish-players', gameState => {
-  console.log('gameState in establish players: ', gameState);
+  // console.log('gameState in establish players: ', gameState);
   for (const key in gameState.players) {
     let player = gameState.players[key];
     // console.log('player', player);
@@ -156,7 +156,7 @@ clientSocket.on('delete-player', player => {
 
 clientSocket.on('player-move-from-server', player => {
   console.log('movement from server:', player);
-  movePlayerCube(player)
+  movePlayerCube(player);
 });
 
 // clientSocket.on('state', (gameState)=>{
@@ -192,6 +192,7 @@ function init() {
   createGround();
   createLights();
   // loadModels()
+  createTrees();
   createRenderer();
 
   //animate and move
@@ -334,9 +335,9 @@ function createGround() {
   scene.add(ground);
 }
 
-function movePlayerCube(player){
-  playersCubes[player.id].position.x = player.cube.x
-  playersCubes[player.id].position.y = player.cube.y
+function movePlayerCube(player) {
+  playersCubes[player.id].position.x = player.cube.x;
+  playersCubes[player.id].position.y = player.cube.y;
 }
 
 function deletePlayerCube(player) {
@@ -431,6 +432,54 @@ function createLights() {
   scene.add(light);
   scene.add(light.target);
 }
+
+function createTrees() {
+  for (let i = 0; i < 11; i++) {
+    let x = [100, 200, -180, -120, -200, -175, 8, 90, -70, -200];
+    let y = [-90, 200, -215, 100, 0, 150, -10, 80, -200, -50];
+    let geometry = new three__WEBPACK_IMPORTED_MODULE_0__["CylinderGeometry"](4, 6, 20, 20);
+    // let material = new THREE.MeshBasicMaterial({ color: 0x654321});
+    let material = new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
+      color: 0x654321,
+      flatShading: true,
+    });
+
+    // let x = Math.floor(Math.random() * 600) - 300;
+    // let y = Math.floor(Math.random() * 600) - 300;
+
+    let cylinder = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](geometry, material);
+    // cylinder.position.z=50;
+    // cylinder.translate(0,90,90)
+    cylinder.rotation.x = Math.PI / 2;
+    cylinder.position.x = x[i];
+    cylinder.position.y = y[i];
+    cylinder.position.z=-10
+    scene.add(cylinder);
+
+    let geometrySphere = new three__WEBPACK_IMPORTED_MODULE_0__["SphereGeometry"](15, 10, 10);
+    let treeTop = new three__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({ color: 0x32cd32 });
+    let sphere = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](geometrySphere, treeTop);
+    sphere.position.z = 10;
+    sphere.position.x = x[i];
+    sphere.position.y = y[i];
+    scene.add(sphere);
+  }
+}
+
+// function addTree(){}
+// let loader = new THREE.FBXLoader();
+// loader.load('models/fbx/Samba Dancing.fbx', function(object) {
+//   mixer = new THREE.AnimationMixer(object);
+//   var action = mixer.clipAction(object.animations[0]);
+//   action.play();
+//   object.traverse(function(child) {
+//     if (child.isMesh) {
+//       child.castShadow = true;
+//       child.receiveShadow = true;
+//     }
+//   });
+//   scene.add(object);
+// });
 
 function createRenderer() {
   let canvas = document.getElementById('field');
