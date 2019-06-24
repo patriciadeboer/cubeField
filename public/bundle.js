@@ -144,6 +144,8 @@ let renderer, scene, camera, cube1, container;
 function init() {
   //initialize all the elements for the scene
   container = document.querySelector('#field');
+
+  window.addEventListener('resize', onWindowResize);
   createScene();
 
   createCloud();
@@ -472,6 +474,18 @@ function cameraPhysics() {
   camera.rotation.x = (-0.01 * Math.PI) / 180;
   camera.rotation.y = (-60 * Math.PI) / 180;
   camera.rotation.z = (-90 * Math.PI) / 180;
+}
+
+function onWindowResize() {
+  // set the aspect ratio to match the new browser window aspect ratio
+  camera.aspect = container.clientWidth / container.clientHeight;
+
+  // update the camera's frustum
+  camera.updateProjectionMatrix();
+
+  // update the size of the renderer AND the canvas
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  console.log('You resized the browser window!');
 }
 
 init();
