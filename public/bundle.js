@@ -99,9 +99,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keyboard */ "./client/keyboard.js");
 /* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! socket.io-client */ "./node_modules/socket.io-client/lib/index.js");
 /* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(socket_io_client__WEBPACK_IMPORTED_MODULE_2__);
-/* eslint-disable max-statements */
-/* eslint-disable guard-for-in */
-
 
 
 
@@ -109,7 +106,6 @@ __webpack_require__.r(__webpack_exports__);
 let playersCubes = {};
 
 const clientSocket = socket_io_client__WEBPACK_IMPORTED_MODULE_2___default()(window.location.origin);
-// const cubeField = window.location.pathname;
 
 clientSocket.on('connect', () => {
   clientSocket.emit('new-player');
@@ -117,11 +113,13 @@ clientSocket.on('connect', () => {
 
 clientSocket.on('establish-players', gameState => {
   for (const key in gameState.players) {
-    let player = gameState.players[key];
-    if (key !== clientSocket.id) {
-      createPlayerCubes(player);
-    } else {
-      createCubes(player);
+    if (gameState.players.hasOwnProperty(key)) {
+      let player = gameState.players[key];
+      if (key !== clientSocket.id) {
+        createPlayerCubes(player);
+      } else {
+        createCubes(player);
+      }
     }
   }
 });
@@ -140,29 +138,37 @@ clientSocket.on('player-move-from-server', player => {
   movePlayerCube(player);
 });
 
-let renderer, scene, camera, pointLight, spotLight;
+let renderer, scene, camera, cube1, container;
 
-let cubeSize, cubeQuality;
-
-let cube1;
-
-let container;
-
+//INITIALIZE ALL 3D ELEMENTS
 function init() {
   //initialize all the elements for the scene
   container = document.querySelector('#field');
   createScene();
-  createCamera();
+
   createCloud();
   createGround();
   createLights();
   createTrees();
+
+  createCamera();
+
   createRenderer();
 
   //animate and move
   draw();
 }
-// container = document.querySelector('#field');
+
+function draw() {
+  renderer.render(scene, camera);
+  requestAnimationFrame(draw);
+
+  // cube1.rotation.x += 0.01;
+  // cube1.rotation.y += 0.01;
+
+  cameraPhysics();
+  cubeMovement();
+}
 
 function createScene() {
   scene = new three__WEBPACK_IMPORTED_MODULE_0__["Scene"]();
@@ -188,11 +194,11 @@ function createPlayerCubes(player) {
     map: loader.load(`../public/imgs/animal${player.imgIdx}.jpg`),
   });
 
-  cubeSize = 30;
-  cubeQuality = 1;
+  let cubeSize = 30;
+  let cubeQuality = 1;
 
   playersCubes[player.id] = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
-    new three__WEBPACK_IMPORTED_MODULE_0__["CubeGeometry"](
+    new three__WEBPACK_IMPORTED_MODULE_0__["BoxGeometry"](
       cubeSize,
       cubeSize,
       cubeSize,
@@ -219,11 +225,11 @@ function createCubes(player) {
     map: loader.load(`../public/imgs/animal${player.imgIdx}.jpg`),
   });
 
-  cubeSize = 30;
-  cubeQuality = 1;
+  let cubeSize = 30;
+  let cubeQuality = 1;
 
   cube1 = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
-    new three__WEBPACK_IMPORTED_MODULE_0__["CubeGeometry"](
+    new three__WEBPACK_IMPORTED_MODULE_0__["BoxGeometry"](
       cubeSize,
       cubeSize,
       cubeSize,
@@ -242,25 +248,28 @@ function createCubes(player) {
   cube1.position.z = player.cube.z;
 }
 
+function movePlayerCube(player) {
+  playersCubes[player.id].position.x = player.cube.x;
+  playersCubes[player.id].position.y = player.cube.y;
+}
+
+function deletePlayerCube(player) {
+  scene.remove(playersCubes[player.id]);
+}
+
 function createGround() {
   let grassMaterial = new three__WEBPACK_IMPORTED_MODULE_0__["MeshLambertMaterial"]({
     color: 'green',
   });
 
   let grass = new three__WEBPACK_IMPORTED_MODULE_0__["Mesh"](
-    new three__WEBPACK_IMPORTED_MODULE_0__["CubeGeometry"](
-      500,
-      500,
-      50, // depth to show 3D
-      15,
-      15,
-      1
-    ),
+    new three__WEBPACK_IMPORTED_MODULE_0__["CubeGeometry"](500, 500, 50, 15, 15, 1),
 
     grassMaterial
   );
   grass.position.z = -51;
   scene.add(grass);
+  grass.castShadow = true;
   grass.receiveShadow = true;
 
   // create the ground's material
@@ -277,15 +286,6 @@ function createGround() {
   ground.position.z = -50;
   ground.receiveShadow = true;
   scene.add(ground);
-}
-
-function movePlayerCube(player) {
-  playersCubes[player.id].position.x = player.cube.x;
-  playersCubes[player.id].position.y = player.cube.y;
-}
-
-function deletePlayerCube(player) {
-  scene.remove(playersCubes[player.id]);
 }
 
 function createCloud() {
@@ -320,80 +320,6 @@ function createCloud() {
     cloud.position.y = y[i];
     cloud.position.z = 100 + Math.floor(Math.random() * 50);
   }
-}
-function createLights() {
-  // // create a point light
-  // // pointLight = new THREE.PointLight(0xf8d898);
-
-  // // // set its position
-  // // pointLight.position.x = -1000;
-  // // pointLight.position.y = 0;
-  // // pointLight.position.z = 1000;
-  // // pointLight.intensity = 2.9;
-  // // pointLight.distance = 10000;
-  // // // add to the scene
-  // // scene.add(pointLight);
-
-  // // add a spot light
-  // this is important for casting shadows
-  spotLight = new three__WEBPACK_IMPORTED_MODULE_0__["SpotLight"](0xf8d898);
-  spotLight.position.set(0, 0, 460);
-  spotLight.intensity = 10;
-  spotLight.shadowDarkness = 0.2;
-  spotLight.shadowCameraVisible = true;
-  // spotLight.shadow.radius = 50;
-  spotLight.shadow.mapSize.width = 1024;
-  spotLight.shadow.mapSize.height = 1024;
-  spotLight.castShadow = true;
-  scene.add(spotLight);
-
-  // // const light2 = new THREE.DirectionalLight(0xffffff, 5.0);
-
-  // // // move the light back and up a bit
-  // // light2.position.set(10, 10, 10);
-
-  // // // remember to add the light to the scene
-  // // scene.add(light);
-  // //Create a PointLight and turn on shadows for the light
-  // let light = new THREE.DirectionalLight(0xffffff, 1, 100);
-  // light.position.set(0, 1000, 1000);
-  // light.castShadow = true; // default false
-  // scene.add(light);
-
-  // //Set up shadow properties for the light
-  // light.shadow.mapSize.width = 512; // default
-  // light.shadow.mapSize.height = 512; // default
-  // light.shadow.camera.near = 0.5; // default
-  // light.shadow.camera.far = 500; // default
-  const intensity = 2;
-  const skyColor = 0xb1e1ff; // light blue
-  const groundColor = 0xb97a20; // brownish orange
-  const hemisphereLight = new three__WEBPACK_IMPORTED_MODULE_0__["HemisphereLight"](
-    skyColor,
-    groundColor,
-    intensity
-  );
-  scene.add(hemisphereLight);
-
-  // const light = new THREE.DirectionalLight(0xffffff, intensity);
-  // light.position.set(0, 0, 400);
-  // light.target.position.set(-5, 0, 0);
-  // scene.add(light);
-  // scene.add(light.target);
-
-  //Correct lights
-
-  //Create a PointLight and turn on shadows for the light
-  // var light2 = new THREE.PointLight( 0xffffff, 1, 100 )
-  // light2.position.set(0, 0, 400);
-  // light2.castShadow = true; // default false
-  // scene.add(light2);
-
-  // //Set up shadow properties for the light2
-  // light2.shadow.mapSize.width = 512; // default
-  // light2.shadow.mapSize.height = 512; // default
-  // light2.shadow.camera.near = 0.5; // default
-  // light2.shadow.camera.far = 500; // default
 }
 
 function createTrees() {
@@ -433,12 +359,33 @@ function createTrees() {
   }
 }
 
+function createLights() {
+  let spotLight = new three__WEBPACK_IMPORTED_MODULE_0__["SpotLight"](0xf8d898);
+  spotLight.position.set(0, 0, 460);
+  spotLight.intensity = 10;
+  spotLight.shadowDarkness = 0.2;
+  spotLight.shadowCameraVisible = true;
+  spotLight.shadow.mapSize.width = 1024;
+  spotLight.shadow.mapSize.height = 1024;
+  spotLight.castShadow = true;
+  scene.add(spotLight);
+
+  const intensity = 2;
+  const skyColor = 0xb1e1ff; // light blue
+  const groundColor = 0xb97a20; // brownish orange
+  const hemisphereLight = new three__WEBPACK_IMPORTED_MODULE_0__["HemisphereLight"](
+    skyColor,
+    groundColor,
+    intensity
+  );
+  scene.add(hemisphereLight);
+}
+
 function createRenderer() {
   let canvas = document.getElementById('field');
 
   renderer = new three__WEBPACK_IMPORTED_MODULE_0__["WebGLRenderer"]({
     antialias: true,
-    // physicallyCorrectLights: true,
   });
 
   renderer.physicallyCorrectLights = true;
@@ -449,33 +396,10 @@ function createRenderer() {
   canvas.appendChild(renderer.domElement);
 }
 
-const playerMovement = {
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-};
-
-function draw() {
-  // console.log('gamestate in draw', gameState)
-  // draw THREE.JS scene
-  renderer.render(scene, camera);
-  // loop draw function call
-  requestAnimationFrame(draw);
-
-  cube1.rotation.x += 0.01;
-  cube1.rotation.y += 0.01;
-
-  // console.log('in draw GameState:', gameState)
-  cameraPhysics();
-  cubeMovement();
-}
-
 function cubeMovement() {
   // move left
   if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(37)) {
     cube1.position.y += 1;
-    playerMovement.left = true;
     clientSocket.emit('playerMovement', {
       id: clientSocket.id,
       cube: {
@@ -485,7 +409,6 @@ function cubeMovement() {
     });
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(39)) {
     cube1.position.y += -1;
-    playerMovement.right = true;
     clientSocket.emit('playerMovement', {
       id: clientSocket.id,
       cube: {
@@ -495,7 +418,6 @@ function cubeMovement() {
     });
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(38)) {
     cube1.position.x += 1;
-    playerMovement.up = true;
     clientSocket.emit('playerMovement', {
       id: clientSocket.id,
       cube: {
@@ -504,7 +426,6 @@ function cubeMovement() {
       },
     });
   } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(40)) {
-    playerMovement.down = true;
     cube1.position.x += -1;
     clientSocket.emit('playerMovement', {
       id: clientSocket.id,
@@ -523,28 +444,15 @@ function cubeMovement() {
     //     y: cube1.position.y,
     //   },
     // });
+  } else if (_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].isDown(_keyboard__WEBPACK_IMPORTED_MODULE_1__["default"].SHIFT)) {
+    cube1.position.z += 1;
   }
+  cube1.rotation.x += 0.01;
+  cube1.rotation.y += 0.01;
 }
 
-// function cube2Movement() {
-//   // move left
-//   if (Key.isDown(Key.A)) {
-//     cube2.position.y += 1;
-//   } else if (Key.isDown(Key.D)) {
-//     cube2.position.y += -1;
-//   } else if (Key.isDown(Key.W)) {
-//     cube2.position.x += 1;
-//   } else if (Key.isDown(Key.S)) {
-//     cube2.position.x += -1;
-//   }
-// }
-
-// Handles camera and lighting logic
+//  camera movement and positioning
 function cameraPhysics() {
-  // we can easily notice shadows if we dynamically move lights during the game
-  // spotLight.position.x = cube2.position.x * 2;
-  // spotLight.position.y = cube2.position.y * 2;
-
   // move to behind the player's cube
   camera.position.x = cube1.position.x - 100;
   camera.position.y += (cube1.position.y - camera.position.y) * 0.05;
@@ -585,6 +493,7 @@ var Key = {
   DOWN: 38,
   RIGHT: 39,
   LEFT: 37,
+  SHIFT: 16,
 
   isDown: function(keyCode) {
     return this._pressed[keyCode];
